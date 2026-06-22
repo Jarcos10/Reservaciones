@@ -1,0 +1,176 @@
+<section class="page-section reservation-page">
+  <div class="container">
+    <div class="page-heading minimal-heading">
+      <span class="section-kicker">Reservación de habitaciones</span>
+      <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-end">
+        <div>
+          <h1>Elige tu habitación</h1>
+          <p>Selecciona fechas, revisa disponibilidad y reserva una habitación cargando tu identificación en PDF.</p>
+        </div>
+        <div class="heading-summary">
+          <span>{{ totalDisponibles() }} disponibles</span>
+          <span>{{ totalOcupados() }} ocupadas</span>
+          <span>{{ totalFueraServicio() }} no habilitadas</span>
+        </div>
+      </div>
+    </div>
+
+    @if (mensaje()) {
+      <div class="alert alert-success alert-minimal">{{ mensaje() }}</div>
+    }
+    @if (error()) {
+      <div class="alert alert-danger alert-minimal">{{ error() }}</div>
+    }
+    @if (cargando()) {
+      <div class="alert alert-info alert-minimal">Cargando información...</div>
+    }
+
+    <div class="reservation-layout">
+      <section class="main-panel room-selection-panel">
+        <div class="panel-header map-header">
+          <div>
+            <span class="section-kicker">Disponibilidad</span>
+            <h2>Mapa de habitaciones</h2>
+            <p>Selecciona una habitación para reservar.</p>
+          </div>
+        </div>
+
+        <div class="selection-workspace">
+          <aside class="availability-card">
+            <form [formGroup]="filtroForm" class="availability-form" (ngSubmit)="buscarDisponibles()">
+              <div class="field-block">
+                <label>Entrada</label>
+                <input type="date" class="form-control" formControlName="fechaEntrada">
+              </div>
+
+              <div class="field-block">
+                <label>Salida</label>
+                <input type="date" class="form-control" formControlName="fechaSalida">
+              </div>
+
+              <div class="field-block">
+                <label>Noches</label>
+                <div class="readonly-value">{{ nochesSeleccionadas() }}</div>
+              </div>
+
+              <button class="btn btn-primary w-100" type="submit">Buscar disponibilidad</button>
+            </form>
+
+            <div class="legend-column">
+              <span><i class="state-dot disponible"></i> Disponible</span>
+              <span><i class="state-dot ocupado"></i> Ocupada</span>
+              <span><i class="state-dot inhabilitado"></i> No habilitada</span>
+              <span><i class="state-dot seleccionado"></i> Seleccionada</span>
+            </div>
+          </aside>
+
+          <div class="building-minimal building-cinema-map">
+            <div class="cinema-screen">Vista de habitaciones por piso</div>
+
+            @for (piso of pisos(); track piso.piso) {
+              <div class="floor-minimal floor-cinema">
+                <div class="floor-side">
+                  <span>Piso</span>
+                  <strong>{{ piso.piso }}</strong>
+                </div>
+
+                <div class="room-seat-grid-cinema">
+                  @for (cuarto of piso.cuartos; track cuarto.id) {
+                    <button
+                      type="button"
+                      class="room-seat"
+                      [class.disponible]="estadoCuarto(cuarto) === 'disponible'"
+                      [class.ocupado]="estadoCuarto(cuarto) === 'ocupado'"
+                      [class.inhabilitado]="estadoCuarto(cuarto) === 'inhabilitado'"
+                      [class.seleccionado]="estadoCuarto(cuarto) === 'seleccionado'"
+                      (click)="seleccionarCuarto(cuarto)">
+                      <span class="seat-number">{{ cuarto.numero }}</span>
+                      <span class="seat-type">{{ cuarto.tipo }}</span>
+                      <span class="seat-price">{{ cuarto.precio | currency:'MXN' }}</span>
+                      <span class="seat-status">{{ textoEstadoCuarto(cuarto) }}</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">No hay habitaciones registradas.</div>
+            }
+
+            <div class="lobby-minimal">Recepción</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="main-panel reservation-summary-panel">
+        <div class="panel-header compact">
+          <div>
+            <span class="section-kicker">Datos de reserva</span>
+            <h2>Confirmar solicitud</h2>
+            <p>Completa tus datos y adjunta tu identificación en PDF.</p>
+          </div>
+        </div>
+
+        @if (cuartoSeleccionado(); as cuarto) {
+          <div class="selected-summary">
+            <div class="selected-title">
+              <span>Habitación seleccionada</span>
+              <strong>{{ cuarto.numero }}</strong>
+            </div>
+
+            <div class="summary-grid">
+              <div><span>Tipo</span><strong>{{ cuarto.tipo }}</strong></div>
+              <div><span>Camas</span><strong>{{ cuarto.numeroCamas }}</strong></div>
+              <div><span>Precio / noche</span><strong>{{ cuarto.precio | currency:'MXN' }}</strong></div>
+              <div><span>Noches</span><strong>{{ nochesSeleccionadas() }}</strong></div>
+              <div class="summary-total"><span>Total estimado</span><strong>{{ totalEstimado() | currency:'MXN' }}</strong></div>
+            </div>
+          </div>
+        } @else {
+          <div class="empty-selection">
+            <strong>Sin habitación seleccionada</strong>
+            <p class="mb-0 text-muted">Elige una habitación disponible en el mapa para continuar.</p>
+          </div>
+        }
+
+        <form [formGroup]="reservacionForm" (ngSubmit)="reservar()" class="reservation-form-minimal">
+          <div class="form-group-minimal">
+            <label>Nombre completo</label>
+            <input class="form-control" formControlName="nombreCliente" placeholder="Nombre del huésped">
+          </div>
+
+          <div class="form-group-minimal">
+            <label>Correo electrónico</label>
+            <input type="email" class="form-control" formControlName="correoCliente" placeholder="correo@ejemplo.com">
+          </div>
+
+          <div class="form-row-minimal">
+            <div class="form-group-minimal">
+              <label>Teléfono</label>
+              <input class="form-control" formControlName="telefonoCliente" placeholder="55 1234 5678">
+            </div>
+            <div class="form-group-minimal">
+              <label>Huéspedes</label>
+              <input type="number" class="form-control" formControlName="numeroHuespedes">
+            </div>
+          </div>
+
+          <div class="form-group-minimal">
+            <label>Identificación PDF</label>
+            <input type="file" class="form-control" accept="application/pdf,.pdf" (change)="seleccionarArchivo($event)">
+            <div class="file-summary mt-2">
+              <span>Archivo seleccionado</span>
+              <strong>{{ nombreArchivoSeleccionado() }}</strong>
+            </div>
+          </div>
+
+          <div class="form-group-minimal">
+            <label>Observaciones</label>
+            <textarea rows="3" class="form-control" formControlName="observaciones" placeholder="Solicitud especial, horario de llegada, etc."></textarea>
+          </div>
+
+          <button class="btn btn-primary w-100" type="submit">Reservar habitación</button>
+        </form>
+      </aside>
+    </div>
+  </div>
+</section>

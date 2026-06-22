@@ -1,0 +1,316 @@
+<section class="page-section admin-page">
+  <div class="container">
+    <div class="page-heading minimal-heading">
+      <span class="section-kicker">Administración</span>
+
+      <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
+        <div>
+          <h1>Panel administrativo</h1>
+          <p>
+            Gestiona habitaciones, disponibilidad y seguimiento de reservaciones.
+          </p>
+        </div>
+
+        <button type="button" class="btn btn-outline-secondary" [disabled]="cargando" (click)="cargarDatos()">
+          {{ cargando ? 'Actualizando...' : 'Actualizar información' }}
+        </button>
+      </div>
+    </div>
+
+    @if (mensaje) {
+    <div class="alert alert-success alert-minimal">
+      {{ mensaje }}
+    </div>
+    }
+
+    @if (error) {
+    <div class="alert alert-danger alert-minimal">
+      {{ error }}
+    </div>
+    }
+
+    @if (cargandoCuartos || cargandoReservaciones) {
+    <div class="alert alert-info alert-minimal">
+      @if (cargandoCuartos && cargandoReservaciones) {
+      Cargando habitaciones y reservaciones...
+      } @else if (cargandoCuartos) {
+      Cargando habitaciones...
+      } @else {
+      Cargando reservaciones...
+      }
+    </div>
+    }
+
+    <div class="metrics-grid mb-4">
+      <div class="metric-card">
+        <span>Cuartos</span>
+        <strong>{{ cuartos.length }}</strong>
+      </div>
+
+      <div class="metric-card">
+        <span>Disponibles</span>
+        <strong>{{ cuartosDisponibles }}</strong>
+      </div>
+
+      <div class="metric-card">
+        <span>Fuera de servicio</span>
+        <strong>{{ cuartosFueraServicio }}</strong>
+      </div>
+
+      <div class="metric-card">
+        <span>Pendientes</span>
+        <strong>{{ reservacionesPendientes }}</strong>
+      </div>
+
+      <div class="metric-card">
+        <span>Con identificación</span>
+        <strong>{{ reservacionesConPdf }}</strong>
+      </div>
+    </div>
+
+    <div class="admin-layout mb-4">
+      <section id="formulario-cuarto" class="main-panel room-form-panel">
+        <div class="panel-header compact">
+          <div>
+            <span class="section-kicker">
+              {{ estaEditando ? 'Edición de cuarto' : 'Alta de cuarto' }}
+            </span>
+
+            <h2>
+              {{ estaEditando ? 'Editar habitación' : 'Registrar habitación' }}
+            </h2>
+
+            <p>
+              {{
+              estaEditando
+              ? 'Modifica los datos principales del cuarto seleccionado.'
+              : 'Agrega una nueva habitación al inventario.'
+              }}
+            </p>
+          </div>
+        </div>
+
+        <form [formGroup]="cuartoForm" (ngSubmit)="guardarCuarto()" class="admin-form-minimal">
+          <div class="form-group-minimal">
+            <label>Tipo de cuarto</label>
+            <input class="form-control" formControlName="tipo" placeholder="Sencilla, Doble, Suite">
+          </div>
+
+          <div class="form-row-minimal admin-room-fields">
+            <div class="form-group-minimal">
+              <label>Número</label>
+              <input type="number" class="form-control" formControlName="numero">
+            </div>
+
+            <div class="form-group-minimal">
+              <label>Precio</label>
+              <input type="number" class="form-control" formControlName="precio">
+            </div>
+
+            <div class="form-group-minimal">
+              <label>Camas</label>
+              <input type="number" class="form-control" formControlName="numeroCamas">
+            </div>
+          </div>
+
+          <div class="form-actions-row">
+            <button class="btn btn-primary" type="submit" [disabled]="cargando">
+              {{ estaEditando ? 'Guardar cambios' : 'Guardar cuarto' }}
+            </button>
+
+            @if (estaEditando) {
+            <button class="btn btn-outline-secondary" type="button" [disabled]="cargando" (click)="cancelarEdicion()">
+              Cancelar edición
+            </button>
+            }
+          </div>
+        </form>
+      </section>
+
+      <section class="main-panel rooms-table-panel">
+        <div class="panel-header compact table-heading">
+          <div>
+            <span class="section-kicker">Inventario</span>
+            <h2>Habitaciones registradas</h2>
+          </div>
+        </div>
+
+        <div class="table-responsive clean-table-wrapper">
+          <table class="table clean-table align-middle">
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Tipo</th>
+                <th>Camas</th>
+                <th>Precio</th>
+                <th>Estado</th>
+                <th class="text-end">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (cuarto of cuartos; track cuarto.id) {
+              <tr [class.table-active]="idCuartoEditando === cuarto.id">
+                <td class="fw-semibold">
+                  {{ cuarto.numero }}
+                </td>
+
+                <td>
+                  {{ cuarto.tipo }}
+                </td>
+
+                <td>
+                  {{ cuarto.numeroCamas }}
+                </td>
+
+                <td>
+                  {{ cuarto.precio | currency:'MXN' }}
+                </td>
+
+                <td>
+                  <span class="status-pill" [class.available]="cuarto.disponible" [class.disabled]="!cuarto.disponible">
+                    {{ cuarto.disponible ? 'Habilitado' : 'Fuera de servicio' }}
+                  </span>
+                </td>
+
+                <td class="text-end">
+                  <div class="table-actions">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="cargando"
+                      (click)="editarCuarto(cuarto)">
+                      Editar
+                    </button>
+
+                    <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="cargando"
+                      (click)="cambiarDisponibilidad(cuarto)">
+                      {{ cuarto.disponible ? 'Deshabilitar' : 'Habilitar' }}
+                    </button>
+
+                    <button class="btn btn-sm btn-outline-danger" type="button" [disabled]="cargando"
+                      (click)="eliminarCuarto(cuarto)">
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              } @empty {
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                  No hay cuartos registrados.
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <section class="main-panel reservations-table-panel">
+      <div class="panel-header compact table-heading">
+        <div>
+          <span class="section-kicker">Seguimiento</span>
+          <h2>Reservaciones registradas</h2>
+        </div>
+
+        <span class="muted-label">
+          {{ reservaciones.length }} registros
+        </span>
+      </div>
+
+      <div class="table-responsive clean-table-wrapper">
+        <table class="table clean-table align-middle">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Cliente</th>
+              <th>Habitación</th>
+              <th>Periodo</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Identificación</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (reservacion of reservaciones; track reservacion.idReservacion) {
+            <tr>
+              <td>
+                {{ reservacion.idReservacion }}
+              </td>
+
+              <td>
+                <strong>{{ reservacion.nombreCliente }}</strong><br>
+                <small class="text-muted">
+                  {{ reservacion.correoCliente || reservacion.telefonoCliente || 'Sin contacto' }}
+                </small>
+              </td>
+
+              <td>
+                {{ reservacion.numeroCuarto }} · {{ reservacion.tipoCuarto }}
+              </td>
+
+              <td>
+                {{ reservacion.fechaEntrada | date:'dd/MM/yyyy' }}
+                -
+                {{ reservacion.fechaSalida | date:'dd/MM/yyyy' }}
+              </td>
+
+              <td>
+                {{ reservacion.total | currency:'MXN' }}
+              </td>
+
+              <td>
+                <span class="status-pill neutral">
+                  {{ reservacion.estado }}
+                </span>
+              </td>
+
+              <td>
+                @if (reservacion.tieneIdentificacion) {
+                <a [href]="descargarIdentificacion(reservacion.idReservacion)" class="btn btn-sm btn-outline-secondary"
+                  target="_blank">
+                  Descargar
+                </a>
+                } @else {
+                <span class="status-pill warning">
+                  Pendiente
+                </span>
+                }
+              </td>
+
+              <td class="text-end">
+                <div class="table-actions">
+                  <button class="btn btn-sm btn-outline-secondary" type="button"
+                    [disabled]="cargando || reservacion.estado === 'CONFIRMADA'"
+                    (click)="confirmar(reservacion.idReservacion)">
+                    Confirmar
+                  </button>
+
+                  <button class="btn btn-sm btn-outline-secondary" type="button"
+                    [disabled]="cargando || reservacion.estado === 'CANCELADA'"
+                    (click)="cancelar(reservacion.idReservacion)">
+                    Cancelar
+                  </button>
+
+                  <button class="btn btn-sm btn-outline-secondary" type="button"
+                    [disabled]="cargando || reservacion.estado === 'FINALIZADA'"
+                    (click)="finalizar(reservacion.idReservacion)">
+                    Finalizar
+                  </button>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="8" class="text-center text-muted py-4">
+                No hay reservaciones registradas.
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</section>

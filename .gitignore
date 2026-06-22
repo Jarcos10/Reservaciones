@@ -1,0 +1,8 @@
+# Angular
+frontend-reservaciones/node_modules/
+frontend-reservaciones/dist/
+frontend-reservaciones/.angular/
+
+# General
+.DS_Store
+Thumbs.db
