@@ -10,12 +10,13 @@ import {
   UpdateCuartoDTO,
   UpdateDisponibilidadDTO
 } from '../model/models';
+import { environment } from '../../environments/environment.production';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private readonly baseUrl = 'http://127.0.0.1:8090/api/v1';
+  private readonly baseUrl = environment.apiUrl;
   private readonly tiempoEspera = 10000;
 
   constructor(private readonly http: HttpClient) {}
