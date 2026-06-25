@@ -1,13 +1,15 @@
 package org.example.reservaciones.features.cuarto.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
-/**
- * DTO que se utilizará para actualizar la disponibilidad de una habitación (Se usa el método PATCH)
- * @param disponible
- */
+@Schema(
+        name = "UpdateDisponibilidadDTO",
+        description = "Solicitud para habilitar o deshabilitar una habitación sin eliminarla del catálogo."
+)
 public record UpdateDisponibilidadDTO(
-        @NotNull(message = "El estatus para la disponibilidad es obligatoria (Esta o no disponible (falso o verdadero))")
+        @Schema(description = "Indica si la habitación debe quedar disponible para nuevas reservaciones. true = disponible, false = fuera de servicio.", example = "false", requiredMode = Schema.RequiredMode.REQUIRED)
+        @NotNull(message = "El estatus para la disponibilidad es obligatorio")
         Boolean disponible
 ) {
 }
