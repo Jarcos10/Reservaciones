@@ -420,8 +420,33 @@ export class AdminDashboard implements OnInit {
       });
   }
 
-  descargarIdentificacion(id: number): string {
-    return this.api.urlDescargarIdentificacion(id);
+  descargarIdentificacion(id: number): void {
+    this.cargandoReservaciones = true;
+    this.actualizarVista();
+
+    this.api.descargarIdentificacion(id)
+      .pipe(
+        timeout(10000),
+        finalize(() => {
+          this.cargandoReservaciones = false;
+          this.actualizarVista();
+        })
+      )
+      .subscribe({
+        next: archivo => this.guardarArchivo(archivo, `identificacion-reservacion-${id}.pdf`),
+        error: err => this.mostrarError(err)
+      });
+  }
+
+  private guardarArchivo(archivo: Blob, nombre: string): void {
+    const url = URL.createObjectURL(archivo);
+    const enlace = document.createElement('a');
+
+    enlace.href = url;
+    enlace.download = nombre;
+    enlace.click();
+
+    URL.revokeObjectURL(url);
   }
 
   private limpiarFormularioCuarto(): void {

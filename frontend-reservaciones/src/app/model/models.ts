@@ -56,3 +56,24 @@ export interface CreateReservacionDTO {
   numeroHuespedes: number;
   observaciones: string;
 }
+
+export type RolUsuario = 'ADMIN' | 'USUARIO';
+
+export interface UsuarioDTO {
+  idUsuario: number;
+  nombre: string;
+  correo: string;
+  rol: RolUsuario;
+  activo: boolean;
+}
+
+export interface RegisterRequestDTO {
+  nombre: string;
+  correo: string;
+  password: string;
+}
+
+export interface LoginCredentials {
+  correo: string;
+  password: string;
+}

@@ -1,0 +1,43 @@
+<section class="auth-page-clean">
+  <div class="auth-panel">
+    <div class="auth-panel-header">
+      <span class="auth-mark">R</span>
+      <span class="eyebrow">Acceso seguro</span>
+      <h1>Iniciar sesión</h1>
+      <p>Ingresa con el usuario asignado para continuar.</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="iniciarSesion()" class="clean-form">
+      @if (error()) {
+        <div class="alert alert-danger alert-minimal">{{ error() }}</div>
+      }
+
+      <div class="form-field">
+        <label>Correo electrónico</label>
+        <input type="email" class="form-control" formControlName="correo" placeholder="correo@ejemplo.com" autocomplete="email">
+      </div>
+
+      <div class="form-field">
+        <label>Contraseña</label>
+        <input type="password" class="form-control" formControlName="password" placeholder="Contraseña" autocomplete="current-password">
+      </div>
+
+      <button class="btn btn-primary submit-button" type="submit" [disabled]="cargando()">
+        {{ cargando() ? 'Validando...' : 'Entrar' }}
+      </button>
+
+      <div class="demo-box">
+        <span>Accesos de prueba</span>
+        <div>
+          <button type="button" (click)="usarAdminDemo()">ADMIN</button>
+          <button type="button" (click)="usarUsuarioDemo()">USUARIO</button>
+        </div>
+      </div>
+
+      <p class="auth-switch">
+        ¿No tienes cuenta?
+        <a routerLink="/registro">Crear cuenta</a>
+      </p>
+    </form>
+  </div>
+</section>

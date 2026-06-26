@@ -3,6 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../service/api-service';
 import { AlertService } from '../service/alert-service';
+import { AuthService } from '../auth/auth-service';
 import { CuartoDTO, CreateReservacionDTO } from '../model/models';
 
 interface PisoView {
@@ -26,6 +27,7 @@ export class ReservaHabitaciones implements OnInit {
   private readonly api = inject(ApiService);
   private readonly alertas = inject(AlertService);
   private readonly fb = inject(FormBuilder);
+  readonly authService = inject(AuthService);
 
   readonly cuartos = signal<CuartoDTO[]>([]);
   readonly cuartosDisponibles = signal<CuartoDTO[]>([]);
@@ -99,6 +101,15 @@ export class ReservaHabitaciones implements OnInit {
       fechaEntrada: this.formatearFecha(hoy),
       fechaSalida: this.formatearFecha(manana)
     });
+
+    const usuario = this.authService.usuario();
+
+    if (usuario) {
+      this.reservacionForm.patchValue({
+        nombreCliente: usuario.nombre,
+        correoCliente: usuario.correo
+      });
+    }
 
     this.sincronizarFechas();
 

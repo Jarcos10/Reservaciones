@@ -1,0 +1,30 @@
+<section class="auth-page-clean">
+  <div class="auth-panel access-panel">
+    <div class="auth-panel-header">
+      <span class="auth-mark">!</span>
+      <span class="eyebrow">Acceso restringido</span>
+      <h1>No autorizado</h1>
+      <p>Tu rol actual no tiene permisos para abrir esta vista.</p>
+    </div>
+
+    @if (authService.usuario(); as usuario) {
+      <div class="current-user-card">
+        <span>Sesión actual</span>
+        <strong>{{ usuario.nombre }}</strong>
+        <small>{{ usuario.correo }} · {{ usuario.rol }}</small>
+      </div>
+    }
+
+    <div class="form-actions">
+      @if (authService.esAdmin()) {
+        <a class="btn btn-primary" routerLink="/admin">Volver a administración</a>
+      }
+
+      @if (authService.esUsuario()) {
+        <a class="btn btn-primary" routerLink="/reservar">Ir a reservaciones</a>
+      }
+
+      <a class="btn btn-outline-secondary" routerLink="/login">Cambiar usuario</a>
+    </div>
+  </div>
+</section>

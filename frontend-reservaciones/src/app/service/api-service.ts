@@ -10,7 +10,7 @@ import {
   UpdateCuartoDTO,
   UpdateDisponibilidadDTO
 } from '../model/models';
-import { environment } from '../../environments/environment.production';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -103,6 +103,14 @@ export class ApiService {
   finalizarReservacion(id: number): Observable<ReservacionDTO> {
     return this.http
       .patch<ReservacionDTO>(`${this.baseUrl}/reservaciones/${id}/finalizar`, {})
+      .pipe(timeout(this.tiempoEspera));
+  }
+
+  descargarIdentificacion(idReservacion: number): Observable<Blob> {
+    return this.http
+      .get(`${this.baseUrl}/archivos/reservaciones/${idReservacion}/identificacion`, {
+        responseType: 'blob'
+      })
       .pipe(timeout(this.tiempoEspera));
   }
 

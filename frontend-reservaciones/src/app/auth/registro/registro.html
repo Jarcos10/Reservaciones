@@ -1,0 +1,47 @@
+<section class="auth-page-clean">
+  <div class="auth-panel register-panel">
+    <div class="auth-panel-header">
+      <span class="auth-mark">R</span>
+      <span class="eyebrow">Cuenta de usuario</span>
+      <h1>Crear cuenta</h1>
+      <p>Regístrate para consultar disponibilidad y generar solicitudes de hospedaje.</p>
+    </div>
+
+    <form [formGroup]="registroForm" (ngSubmit)="registrar()" class="clean-form">
+      @if (error()) {
+        <div class="alert alert-danger alert-minimal">{{ error() }}</div>
+      }
+
+      <div class="form-field">
+        <label>Nombre completo</label>
+        <input class="form-control" formControlName="nombre" placeholder="Nombre y apellido" autocomplete="name">
+      </div>
+
+      <div class="form-field">
+        <label>Correo electrónico</label>
+        <input type="email" class="form-control" formControlName="correo" placeholder="correo@ejemplo.com" autocomplete="email">
+      </div>
+
+      <div class="form-field-grid two">
+        <div class="form-field">
+          <label>Contraseña</label>
+          <input type="password" class="form-control" formControlName="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+        </div>
+
+        <div class="form-field">
+          <label>Confirmar</label>
+          <input type="password" class="form-control" formControlName="confirmarPassword" placeholder="Repite tu contraseña" autocomplete="new-password">
+        </div>
+      </div>
+
+      <button class="btn btn-primary submit-button" type="submit" [disabled]="cargando()">
+        {{ cargando() ? 'Creando...' : 'Crear cuenta' }}
+      </button>
+
+      <p class="auth-switch">
+        ¿Ya tienes cuenta?
+        <a routerLink="/login">Iniciar sesión</a>
+      </p>
+    </form>
+  </div>
+</section>
